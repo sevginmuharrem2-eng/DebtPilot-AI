@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from borc_analiz import borc_analizi_calistir
@@ -8,8 +9,8 @@ from chatbot import chatbot_cevapla
 
 class KartBilgisi(BaseModel):
     banka: str
+    kart_limiti: float
     toplam_borc: float
-    asgari_odeme: float
     son_odeme_tarihi: str
 
 
@@ -25,6 +26,14 @@ class ChatbotIstegi(BaseModel):
 
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/")
@@ -58,8 +67,8 @@ def kullanici_verisiyle_analiz_yap(istek: AnalizIstegi):
     for kart in istek.kartlar:
         kart_listesi.append({
             "banka": kart.banka,
+            "kart_limiti": kart.kart_limiti,
             "toplam_borc": kart.toplam_borc,
-            "asgari_odeme": kart.asgari_odeme,
             "son_odeme_tarihi": kart.son_odeme_tarihi
         })
 
@@ -75,8 +84,8 @@ def kullanici_verisiyle_chatbot_sor(istek: ChatbotIstegi):
     for kart in istek.kartlar:
         kart_listesi.append({
             "banka": kart.banka,
+            "kart_limiti": kart.kart_limiti,
             "toplam_borc": kart.toplam_borc,
-            "asgari_odeme": kart.asgari_odeme,
             "son_odeme_tarihi": kart.son_odeme_tarihi
         })
 

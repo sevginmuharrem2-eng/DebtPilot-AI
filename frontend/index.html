@@ -6,8 +6,75 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>DebtPilot AI</h1>
-    <p>Akilli borc ve odeme onceliklendirme asistani</p>
+    <div class="sayfa">
+        <header class="ust-alan">
+            <h1>DebtPilot AI</h1>
+            <p>Akıllı borç ve ödeme önceliklendirme asistanı</p>
+        </header>
+
+        <main class="ana-alan">
+            <section class="kart-panel">
+                <h2>Kart Bilgileri</h2>
+
+                <div class="form-grup">
+                    <label>Aylık Bütçe</label>
+                    <input type="number" id="aylikButce" placeholder="Örnek: 4000">
+                </div>
+
+                <div class="kart-formu">
+                    <div class="form-grup">
+                        <label>Banka Adı</label>
+                        <input type="text" id="banka" placeholder="Örnek: Akbank">
+                    </div>
+
+                    <div class="form-grup">
+                        <label>Kart Limiti</label>
+                        <input type="number" id="kartLimiti" placeholder="Örnek: 50000">
+                    </div>
+
+                    <div class="form-grup">
+                        <label>Toplam Borç</label>
+                        <input type="number" id="toplamBorc" placeholder="Örnek: 12000">
+                    </div>
+
+                    <div class="form-grup">
+                        <label>Son Ödeme Tarihi</label>
+                        <input type="date" id="sonOdemeTarihi">
+                    </div>
+
+                    <button id="kartEkleBtn">Kart Ekle</button>
+                </div>
+
+                <h3>Eklenen Kartlar</h3>
+                <ul id="kartListesi"></ul>
+
+                <button id="analizYapBtn" class="ana-buton">Analiz Yap</button>
+            </section>
+
+            <section class="sonuc-panel">
+                <h2>Analiz Sonucu</h2>
+                <div id="analizSonucu" class="sonuc-kutusu">
+                    Henüz analiz yapılmadı.
+                </div>
+            </section>
+
+            <section class="chatbot-panel">
+                <h2>DebtPilot Chatbot</h2>
+                <p class="yardimci-yazi">
+                    Örnek soru: "bütçem yetiyor mu", "hangi kart riskli", "önce hangi kartı ödemeliyim"
+                </p>
+
+                <div class="chatbot-alan">
+                    <input type="text" id="chatbotSorusu" placeholder="Sorunuzu yazın">
+                    <button id="chatbotSorBtn">Sor</button>
+                </div>
+
+                <div id="chatbotCevabi" class="chatbot-cevap">
+                    Chatbot cevabı burada görünecek.
+                </div>
+            </section>
+        </main>
+    </div>
 
     <script src="script.js"></script>
 </body>

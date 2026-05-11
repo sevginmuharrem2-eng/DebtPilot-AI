@@ -1,0 +1,268 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(180deg, #eef2ff 0%, #f8faff 100%);
+    color: #1f2937;
+}
+
+.sayfa {
+    width: 92%;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 30px 0 50px 0;
+}
+
+.ust-alan {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.ust-alan h1 {
+    margin-bottom: 10px;
+    font-size: 52px;
+    color: #1e3a8a;
+    font-weight: 800;
+}
+
+.ust-alan p {
+    font-size: 20px;
+    color: #6b7280;
+    margin: 0;
+}
+
+.ana-alan {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    align-items: start;
+}
+
+.kart-panel,
+.sonuc-panel,
+.chatbot-panel {
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid #e5e7eb;
+    border-radius: 20px;
+    padding: 26px;
+    box-shadow: 0 10px 30px rgba(30, 58, 138, 0.08);
+}
+
+.chatbot-panel {
+    grid-column: span 2;
+}
+
+h2 {
+    margin-top: 0;
+    margin-bottom: 18px;
+    font-size: 22px;
+    color: #1e3a8a;
+}
+
+h3 {
+    margin-top: 25px;
+    margin-bottom: 12px;
+    color: #1f2937;
+}
+
+.form-grup {
+    margin-bottom: 14px;
+}
+
+.form-grup label {
+    display: block;
+    margin-bottom: 7px;
+    font-weight: bold;
+    font-size: 14px;
+    color: #111827;
+}
+
+.form-grup input {
+    width: 100%;
+    padding: 13px 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 12px;
+    font-size: 15px;
+    background: #fff;
+    outline: none;
+    transition: 0.2s;
+}
+
+.form-grup input:focus,
+.chatbot-alan input:focus {
+    border-color: #1d4ed8;
+    box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.12);
+}
+
+button {
+    padding: 12px 18px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #1d4ed8, #1e3a8a);
+    color: white;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 600;
+    transition: 0.2s;
+}
+
+button:hover {
+    transform: translateY(-1px);
+    opacity: 0.96;
+}
+
+.ana-buton {
+    width: 100%;
+    margin-top: 18px;
+    background: linear-gradient(135deg, #10b981, #047857);
+}
+
+#kartListesi {
+    list-style: none;
+    padding-left: 0;
+    margin-top: 12px;
+}
+
+#kartListesi li {
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    padding: 12px 14px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    line-height: 1.5;
+}
+
+.sonuc-kutusu,
+.chatbot-cevap {
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    padding: 18px;
+    border-radius: 16px;
+    min-height: 120px;
+    line-height: 1.7;
+}
+
+.chatbot-alan {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+.chatbot-alan input {
+    flex: 1;
+    padding: 13px 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 12px;
+    font-size: 15px;
+    outline: none;
+}
+
+.yardimci-yazi {
+    color: #6b7280;
+    font-size: 14px;
+    margin-bottom: 14px;
+}
+
+.kart-sonuc {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-left: 6px solid #1d4ed8;
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 14px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.kart-sonuc strong {
+    font-size: 18px;
+    color: #111827;
+}
+
+.ozet-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.ozet-kutu {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 14px;
+}
+
+.ozet-baslik {
+    font-size: 13px;
+    color: #6b7280;
+    margin-bottom: 6px;
+}
+
+.ozet-deger {
+    font-size: 20px;
+    font-weight: bold;
+    color: #111827;
+}
+
+.risk-badge {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.risk-yuksek {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.risk-cok-yuksek {
+    background: #fecaca;
+    color: #991b1b;
+}
+
+.risk-orta {
+    background: #fef3c7;
+    color: #b45309;
+}
+
+.risk-dusuk {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.risk-cok-dusuk {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+@media (max-width: 900px) {
+    .ana-alan {
+        grid-template-columns: 1fr;
+    }
+
+    .chatbot-panel {
+        grid-column: span 1;
+    }
+
+    .ozet-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .ust-alan h1 {
+        font-size: 38px;
+    }
+}
+.uyari-kutusu {
+    margin-top: 12px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: #fee2e2;
+    color: #991b1b;
+    font-weight: bold;
+    line-height: 1.5;
+}
