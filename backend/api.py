@@ -52,7 +52,13 @@ def borc_analiz_sonucu():
 @app.get("/chatbot")
 def chatbot_sorusu(soru: str):
     sonuc = borc_analizi_calistir(kartlar, aylik_butce)
-    cevap = chatbot_cevapla(soru, sonuc)
+
+    cevap = chatbot_cevapla(
+        soru,
+        sonuc,
+        kartlar,
+        aylik_butce
+    )
 
     return {
         "soru": soru,
@@ -90,7 +96,13 @@ def kullanici_verisiyle_chatbot_sor(istek: ChatbotIstegi):
         })
 
     sonuc = borc_analizi_calistir(kart_listesi, istek.aylik_butce)
-    cevap = chatbot_cevapla(istek.soru, sonuc)
+
+    cevap = chatbot_cevapla(
+        istek.soru,
+        sonuc,
+        kart_listesi,
+        istek.aylik_butce
+    )
 
     return {
         "soru": istek.soru,

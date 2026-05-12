@@ -1,10 +1,18 @@
-def chatbot_cevapla(soru, sonuc):
+import re
+
+from borc_analiz import borc_analizi_calistir
+
+
+def chatbot_cevapla(soru, sonuc, kartlar=None, aylik_butce=None):
     soru = soru.lower()
 
     odeme_plani = sonuc["odeme_plani"]
     ozet = sonuc["ozet"]
 
-    if eksik_odeme_sorusu_mu(soru):
+    if simulasyon_sorusu_mu(soru):
+        return simulasyon_cevabi_ver(soru, kartlar, aylik_butce, ozet)
+
+    elif eksik_odeme_sorusu_mu(soru):
         return eksik_odeme_cevabi_ver(odeme_plani, ozet)
 
     elif oncelik_sorusu_mu(soru):
@@ -26,6 +34,7 @@ def chatbot_cevapla(soru, sonuc):
         return (
             "Bu soruyu tam anlayamadim. "
             "Bana 'butcem yetiyor mu', "
+            "'butcem 10000 TL olursa ne olur', "
             "'hangi kart riskli', "
             "'hangi kartin asgarisi eksik kaldi', "
             "'once hangi karti odemeliyim', "
@@ -34,10 +43,153 @@ def chatbot_cevapla(soru, sonuc):
         )
 
 
+def tl_formatla(tutar):
+    return f"{float(tutar):,.0f}".replace(",", ".")
+
+
+def simulasyon_sorusu_mu(soru):
+    anahtar_kelimeler = [
+        "olursa",
+        "olsa",
+        "ayirirsam",
+        "ayırırsam",
+        "butcem",
+        "bütçem",
+        "tl olursa",
+        "tl olsa",
+        "ne olur",
+        "yeter mi"
+    ]
+
+    sayi_var_mi = yeni_butce_tutarini_bul(soru) is not None
+
+    if sayi_var_mi == False:
+        return False
+
+    for kelime in anahtar_kelimeler:
+        if kelime in soru:
+            return True
+
+    return False
+
+
+def yeni_butce_tutarini_bul(soru):
+    bulunan_sayilar = re.findall(r"\d[\d.]*", soru)
+
+    if len(bulunan_sayilar) == 0:
+        return None
+
+    temiz_sayilar = []
+
+    for sayi in bulunan_sayilar:
+        temiz_sayi = sayi.replace(".", "")
+
+        if temiz_sayi.isdigit():
+            temiz_sayilar.append(float(temiz_sayi))
+
+    if len(temiz_sayilar) == 0:
+        return None
+
+    return max(temiz_sayilar)
+
+
+def simulasyon_cevabi_ver(soru, kartlar, aylik_butce, mevcut_ozet):
+    if kartlar is None:
+        return (
+            "Simulasyon yapabilmem icin kart bilgilerine ulasamiyorum. "
+            "Lutfen once kartlarini ekleyip analiz yap."
+        )
+
+    yeni_butce = yeni_butce_tutarini_bul(soru)
+
+    if yeni_butce is None:
+        return (
+            "Simulasyon yapabilmem icin yeni butce tutarini anlayamadim. "
+            "Ornegin 'butcem 10000 TL olursa ne olur' diye sorabilirsin."
+        )
+
+    simulasyon_sonucu = borc_analizi_calistir(kartlar, yeni_butce)
+    simulasyon_ozet = simulasyon_sonucu["ozet"]
+    simulasyon_odeme_plani = simulasyon_sonucu["odeme_plani"]
+
+    cevap = (
+        tl_formatla(yeni_butce)
+        + " TL butce senaryosuna gore analiz sonucu: "
+    )
+
+    if simulasyon_ozet["bu_ay_odenecek_kart_sayisi"] == 0:
+        cevap += (
+            "Bu ay son odeme tarihi gelen kart bulunmuyor. "
+            "Bu nedenle bu ay icin asgari odeme riski olusmuyor."
+        )
+        return cevap
+
+    if simulasyon_ozet["toplam_eksik_asgari_odeme"] == 0:
+        cevap += (
+            "Bu butce ile bu ayki toplam asgari odemeler karsilanabiliyor. "
+            + "Bu ayki toplam asgari odeme "
+            + tl_formatla(simulasyon_ozet["toplam_asgari_odeme"])
+            + " TL. "
+            + "Eksik kalan asgari odeme 0 TL olur."
+        )
+    else:
+        cevap += (
+            "Bu butce ile bu ayki toplam asgari odemeler tam karsilanamiyor. "
+            + "Bu ayki toplam asgari odeme "
+            + tl_formatla(simulasyon_ozet["toplam_asgari_odeme"])
+            + " TL. "
+            + "Eksik kalan toplam asgari odeme "
+            + tl_formatla(simulasyon_ozet["toplam_eksik_asgari_odeme"])
+            + " TL olur. "
+        )
+
+        cevap += "Eksik kalan kartlar: "
+
+        for kart in simulasyon_odeme_plani:
+            if kart["bu_ay_odenecek"] == True and kart["eksik_asgari_odeme"] > 0:
+                cevap += (
+                    kart["banka"]
+                    + " kartinda "
+                    + tl_formatla(kart["eksik_asgari_odeme"])
+                    + " TL eksik kalir. "
+                )
+
+    mevcut_eksik = mevcut_ozet["toplam_eksik_asgari_odeme"]
+    yeni_eksik = simulasyon_ozet["toplam_eksik_asgari_odeme"]
+
+    if yeni_eksik < mevcut_eksik:
+        fark = mevcut_eksik - yeni_eksik
+        cevap += (
+            " Mevcut butcene gore "
+            + tl_formatla(fark)
+            + " TL daha az eksik odeme riski olusur."
+        )
+    elif yeni_eksik > mevcut_eksik:
+        fark = yeni_eksik - mevcut_eksik
+        cevap += (
+            " Mevcut butcene gore "
+            + tl_formatla(fark)
+            + " TL daha fazla eksik odeme riski olusur."
+        )
+    else:
+        cevap += " Mevcut butcene gore eksik odeme riski degismiyor."
+
+    if simulasyon_ozet["sonraki_ay_kart_sayisi"] > 0:
+        cevap += (
+            " Son odeme tarihi bu ay icinde olmayan "
+            + str(simulasyon_ozet["sonraki_ay_kart_sayisi"])
+            + " kart bu simulasyona dahil edilmedi."
+        )
+
+    return cevap
+
+
 def oncelik_sorusu_mu(soru):
     anahtar_kelimeler = [
         "once",
+        "önce",
         "oncelik",
+        "öncelik",
         "acil",
         "ilk",
         "hangisini",
@@ -200,7 +352,7 @@ def oncelik_cevabi_ver(odeme_plani):
         cevap += (
             " Ayrica bu kartin asgari odemesi tam karsilanamiyor. "
             + "Eksik kalan tutar "
-            + str(ilk_kart["eksik_asgari_odeme"])
+            + tl_formatla(ilk_kart["eksik_asgari_odeme"])
             + " TL."
         )
 
@@ -242,7 +394,7 @@ def risk_cevabi_ver(odeme_plani):
         if kart["eksik_asgari_odeme"] > 0:
             cevap += (
                 "Bu kartin asgari odemesinde "
-                + str(kart["eksik_asgari_odeme"])
+                + tl_formatla(kart["eksik_asgari_odeme"])
                 + " TL eksik kaliyor. "
             )
 
@@ -262,9 +414,9 @@ def butce_cevabi_ver(odeme_plani, ozet):
         cevap = (
             "Aylik butcen bu ayki toplam asgari odemeleri karsiliyor. "
             + "Bu ayki toplam asgari odeme "
-            + str(ozet["toplam_asgari_odeme"])
+            + tl_formatla(ozet["toplam_asgari_odeme"])
             + " TL, aylik butcen ise "
-            + str(ozet["aylik_butce"])
+            + tl_formatla(ozet["aylik_butce"])
             + " TL. "
             + "Bu ay asgarisi eksik kalan kart bulunmuyor."
         )
@@ -272,12 +424,12 @@ def butce_cevabi_ver(odeme_plani, ozet):
         cevap = (
             "Aylik butcen bu ayki toplam asgari odemeleri tam karsilamiyor. "
             + "Bu ayki toplam asgari odeme "
-            + str(ozet["toplam_asgari_odeme"])
+            + tl_formatla(ozet["toplam_asgari_odeme"])
             + " TL, aylik butcen "
-            + str(ozet["aylik_butce"])
+            + tl_formatla(ozet["aylik_butce"])
             + " TL. "
             + "Toplam eksik kalan asgari odeme "
-            + str(ozet["toplam_eksik_asgari_odeme"])
+            + tl_formatla(ozet["toplam_eksik_asgari_odeme"])
             + " TL."
         )
 
@@ -288,7 +440,7 @@ def butce_cevabi_ver(odeme_plani, ozet):
                 cevap += (
                     kart["banka"]
                     + " kartinda "
-                    + str(kart["eksik_asgari_odeme"])
+                    + tl_formatla(kart["eksik_asgari_odeme"])
                     + " TL eksik kaliyor. "
                 )
 
@@ -307,9 +459,9 @@ def eksik_odeme_cevabi_ver(odeme_plani, ozet):
         cevap = (
             "Bu ay asgari odemesi eksik kalan kart bulunmuyor. "
             + "Bu ayki toplam asgari odeme "
-            + str(ozet["toplam_asgari_odeme"])
+            + tl_formatla(ozet["toplam_asgari_odeme"])
             + " TL ve aylik butcen "
-            + str(ozet["aylik_butce"])
+            + tl_formatla(ozet["aylik_butce"])
             + " TL."
         )
 
@@ -324,7 +476,7 @@ def eksik_odeme_cevabi_ver(odeme_plani, ozet):
 
     cevap = (
         "Bu ay toplam eksik kalan asgari odeme "
-        + str(ozet["toplam_eksik_asgari_odeme"])
+        + tl_formatla(ozet["toplam_eksik_asgari_odeme"])
         + " TL. "
         + "Asgari odemesi tam karsilanamayan kartlar: "
     )
@@ -334,7 +486,7 @@ def eksik_odeme_cevabi_ver(odeme_plani, ozet):
             cevap += (
                 kart["banka"]
                 + " kartinda "
-                + str(kart["eksik_asgari_odeme"])
+                + tl_formatla(kart["eksik_asgari_odeme"])
                 + " TL eksik var. "
             )
 
@@ -357,14 +509,14 @@ def odeme_plani_cevabi_ver(odeme_plani, ozet):
         cevap += (
             kart["banka"]
             + " kartina "
-            + str(kart["onerilen_odeme"])
+            + tl_formatla(kart["onerilen_odeme"])
             + " TL odeme yapilmasi onerilir. "
         )
 
         if kart["eksik_asgari_odeme"] > 0:
             cevap += (
                 "Ancak bu kartin asgari odemesinde "
-                + str(kart["eksik_asgari_odeme"])
+                + tl_formatla(kart["eksik_asgari_odeme"])
                 + " TL eksik kaliyor. "
             )
 
