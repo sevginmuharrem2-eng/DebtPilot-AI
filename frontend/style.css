@@ -43,12 +43,31 @@ body {
 
 .kart-panel,
 .sonuc-panel,
+.rapor-panel,
 .chatbot-panel {
     background: rgba(255, 255, 255, 0.92);
     border: 1px solid #e5e7eb;
     border-radius: 20px;
     padding: 26px;
     box-shadow: 0 10px 30px rgba(30, 58, 138, 0.08);
+}
+.rapor-panel {
+    grid-column: span 2;
+}
+
+.rapor-buton {
+    margin-bottom: 15px;
+    background: linear-gradient(135deg, #7c3aed, #4c1d95);
+}
+
+.rapor-kutusu {
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    padding: 18px;
+    border-radius: 16px;
+    min-height: 160px;
+    line-height: 1.7;
+    white-space: pre-line;
 }
 
 .chatbot-panel {
@@ -248,6 +267,9 @@ button:hover {
     .chatbot-panel {
         grid-column: span 1;
     }
+    .rapor-panel {
+    grid-column: span 1;
+}
 
     .ozet-grid {
         grid-template-columns: 1fr;

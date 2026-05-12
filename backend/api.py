@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from borc_analiz import borc_analizi_calistir
 from ornek_veri import kartlar, aylik_butce
 from chatbot import chatbot_cevapla
+from ai_rapor import finansal_rapor_olustur
 
 
 class KartBilgisi(BaseModel):
@@ -107,5 +108,26 @@ def kullanici_verisiyle_chatbot_sor(istek: ChatbotIstegi):
     return {
         "soru": istek.soru,
         "cevap": cevap,
+        "analiz_ozeti": sonuc["ozet"]
+    }
+
+
+@app.post("/ai-rapor")
+def kullanici_verisiyle_ai_rapor_olustur(istek: AnalizIstegi):
+    kart_listesi = []
+
+    for kart in istek.kartlar:
+        kart_listesi.append({
+            "banka": kart.banka,
+            "kart_limiti": kart.kart_limiti,
+            "toplam_borc": kart.toplam_borc,
+            "son_odeme_tarihi": kart.son_odeme_tarihi
+        })
+
+    sonuc = borc_analizi_calistir(kart_listesi, istek.aylik_butce)
+    rapor = finansal_rapor_olustur(sonuc)
+
+    return {
+        "rapor": rapor,
         "analiz_ozeti": sonuc["ozet"]
     }

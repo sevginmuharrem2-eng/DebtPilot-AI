@@ -16,12 +16,16 @@ const analizYapBtn = document.getElementById("analizYapBtn");
 const kartListesi = document.getElementById("kartListesi");
 const analizSonucu = document.getElementById("analizSonucu");
 
+const aiRaporBtn = document.getElementById("aiRaporBtn");
+const aiRaporSonucu = document.getElementById("aiRaporSonucu");
+
 const chatbotSorusuInput = document.getElementById("chatbotSorusu");
 const chatbotSorBtn = document.getElementById("chatbotSorBtn");
 const chatbotCevabi = document.getElementById("chatbotCevabi");
 
 kartEkleBtn.addEventListener("click", kartEkle);
 analizYapBtn.addEventListener("click", analizYap);
+aiRaporBtn.addEventListener("click", aiRaporOlustur);
 chatbotSorBtn.addEventListener("click", chatbotSor);
 
 
@@ -220,6 +224,46 @@ function analizSonucunuGoster(sonuc) {
     `;
 
     analizSonucu.innerHTML = html;
+}
+
+
+async function aiRaporOlustur() {
+    const aylikButce = Number(aylikButceInput.value);
+
+    if (aylikButce <= 0) {
+        alert("Lütfen önce aylık bütçe girin.");
+        return;
+    }
+
+    if (kartlar.length === 0) {
+        alert("Lütfen önce en az bir kart ekleyin.");
+        return;
+    }
+
+    const istekVerisi = {
+        aylik_butce: aylikButce,
+        kartlar: kartlar
+    };
+
+    try {
+        aiRaporSonucu.innerHTML = "Rapor oluşturuluyor...";
+
+        const cevap = await fetch("http://127.0.0.1:8000/ai-rapor", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(istekVerisi)
+        });
+
+        const sonuc = await cevap.json();
+
+        aiRaporSonucu.textContent = sonuc.rapor;
+
+    } catch (hata) {
+        aiRaporSonucu.innerHTML = "AI rapor API bağlantısında hata oluştu. Backend çalışıyor mu kontrol edin.";
+        console.log(hata);
+    }
 }
 
 
