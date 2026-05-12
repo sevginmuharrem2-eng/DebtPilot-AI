@@ -21,6 +21,15 @@ def kalan_gun_hesapla(son_odeme_tarihi):
     return fark.days
 
 
+def bu_ay_odenecek_mi(son_odeme_tarihi):
+    tarih = datetime.strptime(son_odeme_tarihi, "%Y-%m-%d")
+
+    if tarih.year == BUGUN.year and tarih.month == BUGUN.month:
+        return True
+
+    return False
+
+
 def risk_hesapla(kalan_gun):
     if kalan_gun < 0:
         return "Cok yuksek", 100
@@ -37,6 +46,7 @@ def risk_hesapla(kalan_gun):
 def tek_kart_analiz_et(kart):
     kalan_gun = kalan_gun_hesapla(kart["son_odeme_tarihi"])
     risk, risk_puani = risk_hesapla(kalan_gun)
+    bu_ay_odenecek = bu_ay_odenecek_mi(kart["son_odeme_tarihi"])
 
     asgari_odeme = asgari_odeme_hesapla(
         kart["kart_limiti"],
@@ -50,6 +60,7 @@ def tek_kart_analiz_et(kart):
         "asgari_odeme": asgari_odeme,
         "son_odeme_tarihi": kart["son_odeme_tarihi"],
         "kalan_gun": kalan_gun,
+        "bu_ay_odenecek": bu_ay_odenecek,
         "risk": risk,
         "risk_puani": risk_puani
     }
@@ -74,25 +85,31 @@ def odeme_plani_olustur(analiz_edilmis_kartlar, aylik_butce):
     odeme_plani = []
 
     for kart in analiz_edilmis_kartlar:
-        if kalan_butce >= kart["asgari_odeme"]:
-            onerilen_odeme = kart["asgari_odeme"]
-            kalan_butce = kalan_butce - onerilen_odeme
-
-        elif kalan_butce > 0:
-            onerilen_odeme = kalan_butce
-            kalan_butce = 0
+        if kart["bu_ay_odenecek"] == False:
+            onerilen_odeme = 0
+            eksik_asgari_odeme = 0
+            asgari_tam_odendi_mi = True
 
         else:
-            onerilen_odeme = 0
+            if kalan_butce >= kart["asgari_odeme"]:
+                onerilen_odeme = kart["asgari_odeme"]
+                kalan_butce = kalan_butce - onerilen_odeme
 
-        asgari_tam_odendi_mi = onerilen_odeme >= kart["asgari_odeme"]
+            elif kalan_butce > 0:
+                onerilen_odeme = kalan_butce
+                kalan_butce = 0
 
-        eksik_asgari_odeme = kart["asgari_odeme"] - onerilen_odeme
+            else:
+                onerilen_odeme = 0
 
-        if eksik_asgari_odeme < 0:
-            eksik_asgari_odeme = 0
+            asgari_tam_odendi_mi = onerilen_odeme >= kart["asgari_odeme"]
 
-        eksik_asgari_odeme = round(eksik_asgari_odeme, 2)
+            eksik_asgari_odeme = kart["asgari_odeme"] - onerilen_odeme
+
+            if eksik_asgari_odeme < 0:
+                eksik_asgari_odeme = 0
+
+            eksik_asgari_odeme = round(eksik_asgari_odeme, 2)
 
         odeme_plani.append({
             "banka": kart["banka"],
@@ -100,6 +117,7 @@ def odeme_plani_olustur(analiz_edilmis_kartlar, aylik_butce):
             "toplam_borc": kart["toplam_borc"],
             "son_odeme_tarihi": kart["son_odeme_tarihi"],
             "kalan_gun": kart["kalan_gun"],
+            "bu_ay_odenecek": kart["bu_ay_odenecek"],
             "asgari_odeme": kart["asgari_odeme"],
             "onerilen_odeme": onerilen_odeme,
             "eksik_asgari_odeme": eksik_asgari_odeme,
@@ -116,14 +134,21 @@ def ozet_hesapla(odeme_plani, aylik_butce, kalan_butce):
     toplam_onerilen_odeme = 0
     toplam_eksik_asgari_odeme = 0
     asgarisi_odenemeyen_kart_sayisi = 0
+    bu_ay_odenecek_kart_sayisi = 0
+    sonraki_ay_kart_sayisi = 0
 
     for kart in odeme_plani:
-        toplam_asgari_odeme = toplam_asgari_odeme + kart["asgari_odeme"]
-        toplam_onerilen_odeme = toplam_onerilen_odeme + kart["onerilen_odeme"]
-        toplam_eksik_asgari_odeme = toplam_eksik_asgari_odeme + kart["eksik_asgari_odeme"]
+        if kart["bu_ay_odenecek"] == True:
+            toplam_asgari_odeme = toplam_asgari_odeme + kart["asgari_odeme"]
+            toplam_onerilen_odeme = toplam_onerilen_odeme + kart["onerilen_odeme"]
+            toplam_eksik_asgari_odeme = toplam_eksik_asgari_odeme + kart["eksik_asgari_odeme"]
+            bu_ay_odenecek_kart_sayisi = bu_ay_odenecek_kart_sayisi + 1
 
-        if kart["asgari_tam_odendi_mi"] == False:
-            asgarisi_odenemeyen_kart_sayisi = asgarisi_odenemeyen_kart_sayisi + 1
+            if kart["asgari_tam_odendi_mi"] == False:
+                asgarisi_odenemeyen_kart_sayisi = asgarisi_odenemeyen_kart_sayisi + 1
+
+        else:
+            sonraki_ay_kart_sayisi = sonraki_ay_kart_sayisi + 1
 
     ozet = {
         "aylik_butce": aylik_butce,
@@ -131,7 +156,9 @@ def ozet_hesapla(odeme_plani, aylik_butce, kalan_butce):
         "toplam_onerilen_odeme": round(toplam_onerilen_odeme, 2),
         "toplam_eksik_asgari_odeme": round(toplam_eksik_asgari_odeme, 2),
         "kalan_butce": round(kalan_butce, 2),
-        "asgarisi_odenemeyen_kart_sayisi": asgarisi_odenemeyen_kart_sayisi
+        "asgarisi_odenemeyen_kart_sayisi": asgarisi_odenemeyen_kart_sayisi,
+        "bu_ay_odenecek_kart_sayisi": bu_ay_odenecek_kart_sayisi,
+        "sonraki_ay_kart_sayisi": sonraki_ay_kart_sayisi
     }
 
     return ozet

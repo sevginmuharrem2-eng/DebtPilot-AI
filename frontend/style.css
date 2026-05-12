@@ -266,3 +266,14 @@ button:hover {
     font-weight: bold;
     line-height: 1.5;
 }
+
+.bilgi-kutusu {
+    margin-top: 12px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: #dbeafe;
+    color: #1e40af;
+    font-weight: bold;
+    line-height: 1.5;
+    border: 1px solid #93c5fd;
+}

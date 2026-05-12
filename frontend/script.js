@@ -145,6 +145,17 @@ function analizSonucunuGoster(sonuc) {
             `;
         }
 
+        let ayBilgisiMesaji = "";
+
+        if (kart.bu_ay_odenecek === false) {
+            ayBilgisiMesaji = `
+                <div class="bilgi-kutusu">
+                    ℹ️ Bu kartın son ödeme tarihi bu ay içinde değil. 
+                    Bu ayki ödeme planına dahil edilmedi.
+                </div>
+            `;
+        }
+
         html += `
             <div class="kart-sonuc">
                 <strong>${kart.banka}</strong><br>
@@ -156,6 +167,7 @@ function analizSonucunuGoster(sonuc) {
                 Son Ödeme Tarihi: ${kart.son_odeme_tarihi}<br>
                 Kalan Gün: ${kart.kalan_gun}<br>
                 Risk: <span class="risk-badge ${riskClass}">${kart.risk}</span>
+                ${ayBilgisiMesaji}
                 ${eksikOdemeUyarisi}
             </div>
         `;
@@ -193,6 +205,16 @@ function analizSonucunuGoster(sonuc) {
             <div class="ozet-kutu">
                 <div class="ozet-baslik">Asgarisi Ödenemeyen Kart Sayısı</div>
                 <div class="ozet-deger">${sonuc.ozet.asgarisi_odenemeyen_kart_sayisi}</div>
+            </div>
+
+            <div class="ozet-kutu">
+                <div class="ozet-baslik">Bu Ay Ödenecek Kart Sayısı</div>
+                <div class="ozet-deger">${sonuc.ozet.bu_ay_odenecek_kart_sayisi}</div>
+            </div>
+
+            <div class="ozet-kutu">
+                <div class="ozet-baslik">Sonraki Aya Kalan Kart Sayısı</div>
+                <div class="ozet-deger">${sonuc.ozet.sonraki_ay_kart_sayisi}</div>
             </div>
         </div>
     `;
