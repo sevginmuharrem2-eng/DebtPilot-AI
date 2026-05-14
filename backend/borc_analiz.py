@@ -129,6 +129,45 @@ def odeme_plani_olustur(analiz_edilmis_kartlar, aylik_butce):
     return odeme_plani, kalan_butce
 
 
+def finansal_saglik_skoru_hesapla(
+    odeme_plani,
+    toplam_eksik_asgari_odeme,
+    asgarisi_odenemeyen_kart_sayisi,
+    sonraki_ay_kart_sayisi
+):
+    skor = 100
+
+    if toplam_eksik_asgari_odeme > 0:
+        skor = skor - 40
+
+    skor = skor - (asgarisi_odenemeyen_kart_sayisi * 10)
+
+    for kart in odeme_plani:
+        if kart["bu_ay_odenecek"] == True:
+            if kart["risk"] == "Yuksek":
+                skor = skor - 15
+
+            elif kart["risk"] == "Cok yuksek":
+                skor = skor - 25
+
+    if sonraki_ay_kart_sayisi > 0:
+        skor = skor - 5
+
+    if skor < 0:
+        skor = 0
+
+    if skor >= 80:
+        finansal_durum = "Guvenli"
+    elif skor >= 60:
+        finansal_durum = "Orta riskli"
+    elif skor >= 40:
+        finansal_durum = "Riskli"
+    else:
+        finansal_durum = "Kritik"
+
+    return skor, finansal_durum
+
+
 def ozet_hesapla(odeme_plani, aylik_butce, kalan_butce):
     toplam_asgari_odeme = 0
     toplam_onerilen_odeme = 0
@@ -150,12 +189,29 @@ def ozet_hesapla(odeme_plani, aylik_butce, kalan_butce):
         else:
             sonraki_ay_kart_sayisi = sonraki_ay_kart_sayisi + 1
 
+    minimum_gerekli_butce = toplam_asgari_odeme
+    eksik_guvenli_butce = minimum_gerekli_butce - aylik_butce
+
+    if eksik_guvenli_butce < 0:
+        eksik_guvenli_butce = 0
+
+    finansal_saglik_skoru, finansal_durum = finansal_saglik_skoru_hesapla(
+        odeme_plani,
+        toplam_eksik_asgari_odeme,
+        asgarisi_odenemeyen_kart_sayisi,
+        sonraki_ay_kart_sayisi
+    )
+
     ozet = {
         "aylik_butce": aylik_butce,
         "toplam_asgari_odeme": round(toplam_asgari_odeme, 2),
         "toplam_onerilen_odeme": round(toplam_onerilen_odeme, 2),
         "toplam_eksik_asgari_odeme": round(toplam_eksik_asgari_odeme, 2),
         "kalan_butce": round(kalan_butce, 2),
+        "minimum_gerekli_butce": round(minimum_gerekli_butce, 2),
+        "eksik_guvenli_butce": round(eksik_guvenli_butce, 2),
+        "finansal_saglik_skoru": finansal_saglik_skoru,
+        "finansal_durum": finansal_durum,
         "asgarisi_odenemeyen_kart_sayisi": asgarisi_odenemeyen_kart_sayisi,
         "bu_ay_odenecek_kart_sayisi": bu_ay_odenecek_kart_sayisi,
         "sonraki_ay_kart_sayisi": sonraki_ay_kart_sayisi

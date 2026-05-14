@@ -299,3 +299,54 @@ button:hover {
     line-height: 1.5;
     border: 1px solid #93c5fd;
 }
+
+
+.skor-panel {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px;
+    border-radius: 16px;
+    margin-bottom: 18px;
+    border: 1px solid #e5e7eb;
+}
+
+.skor-baslik {
+    font-size: 14px;
+    opacity: 0.85;
+    margin-bottom: 6px;
+}
+
+.skor-deger {
+    font-size: 34px;
+    font-weight: 800;
+}
+
+.skor-durum {
+    font-size: 28px;
+    font-weight: 800;
+}
+
+.durum-guvenli {
+    background: #dcfce7;
+    color: #166534;
+    border-color: #86efac;
+}
+
+.durum-orta {
+    background: #fef3c7;
+    color: #92400e;
+    border-color: #fcd34d;
+}
+
+.durum-riskli {
+    background: #ffedd5;
+    color: #9a3412;
+    border-color: #fdba74;
+}
+
+.durum-kritik {
+    background: #fee2e2;
+    color: #991b1b;
+    border-color: #fca5a5;
+}

@@ -4,6 +4,34 @@ function tlFormatla(tutar) {
     return Number(tutar).toLocaleString("tr-TR");
 }
 
+function finansalDurumClassGetir(finansalDurum) {
+    if (finansalDurum === "Guvenli") {
+        return "durum-guvenli";
+    }
+
+    if (finansalDurum === "Orta riskli") {
+        return "durum-orta";
+    }
+
+    if (finansalDurum === "Riskli") {
+        return "durum-riskli";
+    }
+
+    if (finansalDurum === "Kritik") {
+        return "durum-kritik";
+    }
+
+    return "durum-orta";
+}
+
+function finansalDurumYazisiniDuzelt(finansalDurum) {
+    if (finansalDurum === "Guvenli") {
+        return "Güvenli";
+    }
+
+    return finansalDurum;
+}
+
 const aylikButceInput = document.getElementById("aylikButce");
 const bankaInput = document.getElementById("banka");
 const kartLimitiInput = document.getElementById("kartLimiti");
@@ -120,6 +148,23 @@ async function analizYap() {
 function analizSonucunuGoster(sonuc) {
     let html = "";
 
+    const finansalDurumClass = finansalDurumClassGetir(sonuc.ozet.finansal_durum);
+    const finansalDurumYazisi = finansalDurumYazisiniDuzelt(sonuc.ozet.finansal_durum);
+
+    html += `
+        <div class="skor-panel ${finansalDurumClass}">
+            <div>
+                <div class="skor-baslik">Finansal Sağlık Skoru</div>
+                <div class="skor-deger">${sonuc.ozet.finansal_saglik_skoru} / 100</div>
+            </div>
+
+            <div>
+                <div class="skor-baslik">Finansal Durum</div>
+                <div class="skor-durum">${finansalDurumYazisi}</div>
+            </div>
+        </div>
+    `;
+
     html += "<h3>Ödeme Planı</h3>";
 
     for (let i = 0; i < sonuc.odeme_plani.length; i++) {
@@ -184,6 +229,16 @@ function analizSonucunuGoster(sonuc) {
             <div class="ozet-kutu">
                 <div class="ozet-baslik">Aylık Bütçe</div>
                 <div class="ozet-deger">${tlFormatla(sonuc.ozet.aylik_butce)} TL</div>
+            </div>
+
+            <div class="ozet-kutu">
+                <div class="ozet-baslik">Minimum Gerekli Bütçe</div>
+                <div class="ozet-deger">${tlFormatla(sonuc.ozet.minimum_gerekli_butce)} TL</div>
+            </div>
+
+            <div class="ozet-kutu">
+                <div class="ozet-baslik">Eksik Güvenli Bütçe</div>
+                <div class="ozet-deger">${tlFormatla(sonuc.ozet.eksik_guvenli_butce)} TL</div>
             </div>
 
             <div class="ozet-kutu">
