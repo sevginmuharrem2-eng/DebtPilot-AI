@@ -350,3 +350,18 @@ button:hover {
     color: #991b1b;
     border-color: #fca5a5;
 }
+.gemini-buton {
+    margin-bottom: 15px;
+    background: linear-gradient(135deg, #2563eb, #1e3a8a);
+    color: white;
+    border: none;
+    padding: 13px 18px;
+    border-radius: 12px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.gemini-buton:hover {
+    transform: translateY(-1px);
+    opacity: 0.95;
+}

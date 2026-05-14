@@ -47,6 +47,9 @@ const analizSonucu = document.getElementById("analizSonucu");
 const aiRaporBtn = document.getElementById("aiRaporBtn");
 const aiRaporSonucu = document.getElementById("aiRaporSonucu");
 
+const geminiRaporBtn = document.getElementById("geminiRaporBtn");
+const geminiRaporSonucu = document.getElementById("geminiRaporSonucu");
+
 const chatbotSorusuInput = document.getElementById("chatbotSorusu");
 const chatbotSorBtn = document.getElementById("chatbotSorBtn");
 const chatbotCevabi = document.getElementById("chatbotCevabi");
@@ -54,6 +57,7 @@ const chatbotCevabi = document.getElementById("chatbotCevabi");
 kartEkleBtn.addEventListener("click", kartEkle);
 analizYapBtn.addEventListener("click", analizYap);
 aiRaporBtn.addEventListener("click", aiRaporOlustur);
+geminiRaporBtn.addEventListener("click", geminiRaporOlustur);
 chatbotSorBtn.addEventListener("click", chatbotSor);
 
 
@@ -108,23 +112,39 @@ function kartFormunuTemizle() {
 }
 
 
-async function analizYap() {
+function analizIstekVerisiHazirla() {
     const aylikButce = Number(aylikButceInput.value);
 
-    if (aylikButce <= 0) {
-        alert("Lütfen aylık bütçe girin.");
-        return;
-    }
-
-    if (kartlar.length === 0) {
-        alert("Lütfen en az bir kart ekleyin.");
-        return;
-    }
-
-    const istekVerisi = {
+    return {
         aylik_butce: aylikButce,
         kartlar: kartlar
     };
+}
+
+
+function temelKontrolleriYap() {
+    const aylikButce = Number(aylikButceInput.value);
+
+    if (aylikButce <= 0) {
+        alert("Lütfen önce aylık bütçe girin.");
+        return false;
+    }
+
+    if (kartlar.length === 0) {
+        alert("Lütfen önce en az bir kart ekleyin.");
+        return false;
+    }
+
+    return true;
+}
+
+
+async function analizYap() {
+    if (temelKontrolleriYap() === false) {
+        return;
+    }
+
+    const istekVerisi = analizIstekVerisiHazirla();
 
     try {
         const cevap = await fetch("http://127.0.0.1:8000/analiz-yap", {
@@ -283,22 +303,11 @@ function analizSonucunuGoster(sonuc) {
 
 
 async function aiRaporOlustur() {
-    const aylikButce = Number(aylikButceInput.value);
-
-    if (aylikButce <= 0) {
-        alert("Lütfen önce aylık bütçe girin.");
+    if (temelKontrolleriYap() === false) {
         return;
     }
 
-    if (kartlar.length === 0) {
-        alert("Lütfen önce en az bir kart ekleyin.");
-        return;
-    }
-
-    const istekVerisi = {
-        aylik_butce: aylikButce,
-        kartlar: kartlar
-    };
+    const istekVerisi = analizIstekVerisiHazirla();
 
     try {
         aiRaporSonucu.innerHTML = "Rapor oluşturuluyor...";
@@ -317,6 +326,35 @@ async function aiRaporOlustur() {
 
     } catch (hata) {
         aiRaporSonucu.innerHTML = "AI rapor API bağlantısında hata oluştu. Backend çalışıyor mu kontrol edin.";
+        console.log(hata);
+    }
+}
+
+
+async function geminiRaporOlustur() {
+    if (temelKontrolleriYap() === false) {
+        return;
+    }
+
+    const istekVerisi = analizIstekVerisiHazirla();
+
+    try {
+        geminiRaporSonucu.innerHTML = "Gemini finans koçu raporu oluşturuluyor...";
+
+        const cevap = await fetch("http://127.0.0.1:8000/gemini-rapor", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(istekVerisi)
+        });
+
+        const sonuc = await cevap.json();
+
+        geminiRaporSonucu.textContent = sonuc.gemini_rapor;
+
+    } catch (hata) {
+        geminiRaporSonucu.innerHTML = "Gemini rapor API bağlantısında hata oluştu. Backend çalışıyor mu kontrol edin.";
         console.log(hata);
     }
 }

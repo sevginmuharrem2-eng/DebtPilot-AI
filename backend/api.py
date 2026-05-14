@@ -6,6 +6,7 @@ from borc_analiz import borc_analizi_calistir
 from ornek_veri import kartlar, aylik_butce
 from chatbot import chatbot_cevapla
 from ai_rapor import finansal_rapor_olustur
+from gemini_servisi import gemini_finans_kocu_raporu_olustur
 
 
 class KartBilgisi(BaseModel):
@@ -129,5 +130,28 @@ def kullanici_verisiyle_ai_rapor_olustur(istek: AnalizIstegi):
 
     return {
         "rapor": rapor,
+        "analiz_ozeti": sonuc["ozet"]
+    }
+
+
+@app.post("/gemini-rapor")
+def gemini_rapor_olustur(istek: AnalizIstegi):
+    kart_listesi = []
+
+    for kart in istek.kartlar:
+        kart_listesi.append({
+            "banka": kart.banka,
+            "kart_limiti": kart.kart_limiti,
+            "toplam_borc": kart.toplam_borc,
+            "son_odeme_tarihi": kart.son_odeme_tarihi
+        })
+
+    sonuc = borc_analizi_calistir(kart_listesi, istek.aylik_butce)
+    algoritmik_rapor = finansal_rapor_olustur(sonuc)
+    gemini_rapor = gemini_finans_kocu_raporu_olustur(algoritmik_rapor)
+
+    return {
+        "algoritmik_rapor": algoritmik_rapor,
+        "gemini_rapor": gemini_rapor,
         "analiz_ozeti": sonuc["ozet"]
     }
