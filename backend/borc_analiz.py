@@ -1,7 +1,7 @@
 from datetime import datetime
 
 
-BUGUN = datetime.strptime("2026-05-09", "%Y-%m-%d")
+BUGUN = datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
 
 
 def asgari_odeme_hesapla(kart_limiti, toplam_borc):
